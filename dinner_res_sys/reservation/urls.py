@@ -14,4 +14,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('dining-place/create/', CreateDiningPlaceAPIView.as_view(), name='create_dining_place'),
     path('dining-place', DiningPlaceListView.as_view(), name='dining-place-list'),
+    path('dining-place/availability', CheckAvailabilityView.as_view(), name='check-availability'),
+    path('dining-place/book', MakeBookingView.as_view(), name='make-booking'),
 ]
