@@ -14,10 +14,11 @@ This Django application is designed to manage dining place bookings. It includes
 
 ## Requirements
 
-- Python 3.8+
-- Django 4.0+
+- Python 3.10+
+- Django 5.0+
 - Django REST framework
 - `phonenumber_field` library
+- `Poetry` for dependency management
 
 ## Setup
 
@@ -27,29 +28,25 @@ This Django application is designed to manage dining place bookings. It includes
 git clone https://github.com/Reuben-Stephen-John/WorkIndia-API-Challenge.git
 ```
 
-### 2. Install Poetry
-
-If you don't have Poetry installed, you can install it by following the instructions on the [Poetry website](https://python-poetry.org/docs/#installation).
-
-### 3. Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 poetry install
 ```
 
-### 4. Apply Migrations
+### 3. Apply Migrations
 
 ```bash
 poetry run python manage.py migrate
 ```
 
-### 5. Create Superuser (For Admin Panel)
+### 4. Create Superuser (For Admin Panel)
 
 ```bash
 poetry run python manage.py createsuperuser
 ```
 
-### 6. Run the Development Server
+### 5. Run the Development Server
 
 ```bash
 poetry run python manage.py runserver
@@ -57,9 +54,33 @@ poetry run python manage.py runserver
 
 ## API Endpoints
 
-### User Registration
+### 1. Register a User
 
-- **POST** `/api/user/register/`
+- **POST** `/api/signup/`
+
+  **Request Data:**
+
+  ```json
+  {
+    "username": "example_user",
+    "password": "example_password",
+    "email": "user@example.com"
+  }
+  ```
+
+  **Response Data:**
+
+  ```json
+  {
+    "status": "Account successfully created",
+    "status_code": 200,
+    "user_id": "123445"
+  }
+  ```
+
+### 2. Login User
+
+- **POST** `/api/login/`
 
   **Request Data:**
 
@@ -70,28 +91,7 @@ poetry run python manage.py runserver
   }
   ```
 
-  **Response Data:**
-
-  ```json
-  {
-    "status": "account created"
-  }
-  ```
-
-### User Login
-
-- **POST** `/api/user/login/`
-
-  **Request Data:**
-
-  ```json
-  {
-    "username": "example_user",
-    "password": "example_password"
-  }
-  ```
-
-  **Response Data:**
+  **Successful Response Data:**
 
   ```json
   {
@@ -102,33 +102,32 @@ poetry run python manage.py runserver
   }
   ```
 
-### List Saved Notes
-
-- **GET** `/api/notes/list/?user={userId}`
-
-  **Request Data:** None
-
-  **Response Data:**
+  **Failure Response Data:**
 
   ```json
-  [
-    {
-      "note_id": 1,
-      "note": "Sample note text"
-    }
-  ]
+  {
+    "status": "Incorrect username/password provided. Please retry",
+    "status_code": 401
+  }
   ```
 
-### Save a New Note
+### 3. Add a New Dining Place
 
-- **POST** `/api/notes/`
+- **POST** `/api/dining-place/create/`
 
   **Request Data:**
 
   ```json
   {
-    "user_id": "12345",
-    "note": "Sample note text"
+    "name": "Gatsby",
+    "address": "HSR Layout",
+    "phone_no": "9999999999",
+    "website": "http://workindia.in/",
+    "operational_hours": {
+      "open_time": "08:00:00",
+      "close_time": "23:00:00"
+    },
+    "booked_slots": []
   }
   ```
 
@@ -136,17 +135,19 @@ poetry run python manage.py runserver
 
   ```json
   {
-    "status": "success"
+    "message": "Gatsby added successfully",
+    "place_id": "12345",
+    "status_code": 200
   }
   ```
 
-### Search Dining Places by Name
+### 4. Search Dining Places by Name
 
-- **GET** `/api/dining-place?name={search_query}`
+- **GET** `/api/dining-place/`
 
   **Params:**
 
-  - `search_query` (str): The keyword to search for in dining place names.
+  - `name` (str): The keyword to search for in dining place names.
 
   **Response Data:**
 
@@ -166,9 +167,9 @@ poetry run python manage.py runserver
   ]
   ```
 
-### Check Dining Place Availability
+### 5. Get Dining Place Availability
 
-- **GET** `/api/dining-place/availability`
+- **GET** `/api/dining-place/availability/`
 
   **Params:**
 
@@ -178,40 +179,65 @@ poetry run python manage.py runserver
 
   **Response Data:**
 
+  **For available slots:**
+
+  ```json
+  {
+    "place_id": "12345",
+    "name": "Gatsby",
+    "phone_no": "+9999999999",
+    "available": true,
+    "next_available_slot": null
+  }
+  ```
+
+  **For already booked slots:**
+
   ```json
   {
     "place_id": "12345",
     "name": "Gatsby",
     "phone_no": "+9999999999",
     "available": false,
-    "next_available_slot": "2024-01-01T17:00:00Z"
+    "next_available_slot": "2023-01-01T17:00:00Z"
   }
   ```
 
-### Make a Booking
+### 6. Make a Booking
 
-- **POST** `/api/dining-place/booking/`
+- **POST** `/api/dining-place/book/`
+
+  **Headers:**
+
+  - `Authorization: Bearer {token}`
 
   **Request Data:**
 
   ```json
   {
     "place_id": "12345",
-    "start_time": "2024-01-01T16:00:00Z",
-    "end_time": "2024-01-01T17:00:00Z"
+    "start_time": "2023-01-02T12:00:00Z",
+    "end_time": "2023-01-02T13:00:00Z"
   }
   ```
 
   **Response Data:**
 
+  **For successful booking:**
+
   ```json
   {
-    "status": "Booking successful",
-    "booking_id": 1
+    "status": "Slot booked successfully",
+    "status_code": 200,
+    "booking_id": "54321"
   }
   ```
 
-## Notes
+  **For already booked slots:**
 
-- Ensure to handle authentication by including the `Authorization` header with the token for endpoints that require it.
-- Admin endpoints are protected by an API key. Make sure to include the key in the request headers when accessing these endpoints.
+  ```json
+  {
+    "status": "Slot is not available at this moment, please try some other place",
+    "status_code": 400
+  }
+  ```
