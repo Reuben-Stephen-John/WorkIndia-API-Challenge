@@ -106,7 +106,7 @@ class CreateDiningPlaceAPIView(APIView):
 
 
 class DiningPlaceListView(generics.ListAPIView):
-    serializer_class = DiningPlaceSerializer
+    serializer_class = RestaurantViewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):

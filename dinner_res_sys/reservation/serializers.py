@@ -62,7 +62,15 @@ class RestaurantSerializer(serializers.ModelSerializer):
         )
         return restaurant
     
-class DiningPlaceSerializer(serializers.ModelSerializer):
+
+class BookedSlotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookedSlot
+        fields = ['res_start_time', 'res_end_time']
+
+class RestaurantViewSerializer(serializers.ModelSerializer):
+    booked_slots = BookedSlotSerializer(many=True, read_only=True, source='booked_restaurant')
+
     class Meta:
         model = Restaurant
-        fields = '__all__'
+        fields = ['restaurant_name', 'address', 'website', 'phone_no', 'open_time', 'close_time', 'slug', 'booked_slots']
